@@ -68,6 +68,7 @@ class PublicTransaction extends Page implements HasForms
     //     $this->queueService = $queueService; // Inject the service in the constructor
     // }
 
+
     public function mount ()
     {
         // Ensure the form fields are initialized
@@ -90,6 +91,8 @@ class PublicTransaction extends Page implements HasForms
 
         $this->services = Service::all()->toArray();
     }
+
+
 
     public function form(Form $form): Form
     {
@@ -284,14 +287,14 @@ class PublicTransaction extends Page implements HasForms
 
                         $whatsappService->sendMessage([
                             'phone' => $this->customer->phone, // Send to the customer's phone
-                            'message' => "Halo, Sahabat Data!
-                        Nama: {$customerName}
-                        Nomor Antrian: {$queueNumber}
-                        Layanan yang Dibutuhkan: {$serviceName}
-                        Tanggal pelayanan: {$queueDate}
-
-                        Terima kasih telah menggunakan layanan kami!",
+                            'message' => "Halo, Sahabat Data!\n\n" .
+                                         "Nama: {$customerName}\n" .
+                                         "Nomor Antrian: {$queueNumber}\n" .
+                                         "Layanan yang Dibutuhkan: {$serviceName}\n" .
+                                         "Tanggal pelayanan: {$queueDate}\n\n" .
+                                         "Tunjukkan pesan ini kepada petugas pelayanan. Terima kasih telah menggunakan layanan kami!",
                         ]);
+
                         // $whatsappService->sendMessage([
                         //     'phone' => $this->customer->phone, // Send to the customer's phone
                         //     'message' => 'Halo, Sahabat Data!Your queue number is ' . $queueNumber . '. Thank you for using our service!',
