@@ -1,0 +1,138 @@
+<?php
+
+namespace App\Filament\Guest\Pages;
+
+use App\Models\Customer;
+use App\Models\Education;
+use App\Models\Purpose;
+use App\Models\Service;
+use App\Models\SubMethod;
+use App\Models\Transaction;
+use App\Models\University;
+use App\Models\Work;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Form;
+use Filament\Pages\Page;
+use Filament\Action;
+use CreateRecord\Concerns\HasWizard;
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Get;
+use Filament\Forms\Components\View;
+use Illuminate\Support\HtmlString;
+
+class PublicTransaction extends Page implements HasForms
+{
+    // use CreateRecord\Concerns\HasWizard;
+
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+
+    protected static string $view = 'filament.guest.pages.public-transaction';
+
+    public $name;
+    public $phone;
+    public $email;
+    public $age;
+    public $gender;
+    public $work_id;
+    public $service_id;
+    public $education_id;
+    public $university_id;
+    public $customer;
+    public $transaction;
+
+    public $services;
+    public $selectedService;
+
+    public function mount ()
+    {
+        // Ensure the form fields are initialized
+        $this->form->fill([
+            'name' => $this->name,
+            'phone' => $this->phone,
+            'email' => $this->email,
+            'age' => $this->age,
+            'gender' => $this->gender,
+            'work_id' => $this->work_id,
+            'service_id' => $this->service_id,
+            'education_id' => $this->education_id,
+            'university_id' => $this->university_id,
+        ]);
+        $this->selectedService = null;
+
+        $this->services = Service::all()->toArray();
+    }
+
+    public function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                    Wizard\Step::make('Data Pribadi')
+                        ->schema([
+                            TextInput::make('name')
+                                ->label('Masukkan Nama Anda')
+                                ->required()
+                                ->maxLength(255),
+                            TextInput::make('phone')
+                                ->required()
+                                ->label('Masukkan Nomor Handphone')
+                                ->tel()
+                                ->telRegex('/^(?:\+62|62|0)8[1-9][0-9]{6,10}$/'),
+                            TextInput::make('email')
+                                ->required()
+                                ->email(),
+                            TextInput::make('age')
+                                ->label('Masukkan Usia Anda')
+                                ->numeric()
+                                ->maxLength(2)              // Maximum length of 2 characters
+                                ->required(),
+                            Select::make('gender')
+                                ->label('Pilih Jenis Kelamin')
+                                ->options([
+                                    'male' => 'Laki-Laki',
+                                    'female' => 'Perempuan',
+                                ])
+                                ->required(),
+                                    ]),
+                    Wizard\Step::make('Pendidikan & Pekerjaan')
+                        ->schema([
+                            Select::make('education_id')
+                                ->label('Pendidikan terakhir')
+                                ->options(Education::all()->pluck('name', 'id'))
+                                ->required(),
+                            Select::make('work_id')
+                                ->label('Pilih Pekerjaan Anda')
+                                ->options(Work::all()->pluck('name', 'id'))
+                                ->required()
+                                ->reactive() // Make this field reactive to allow dynamic form updates
+                                ->afterStateUpdated(fn (callable $set) => $set('university_id', null)),
+                            Select::make('university_id')
+                                ->label('Pilih Universitas')
+                                ->options(University::all()->pluck('name', 'id')) // Make sure to populate this with your actual university data
+                                ->required()
+                                ->searchable()
+                                ->hidden(fn (Get $get) => $get('work_id') !== '1') // Show only when work_id is 1
+                                ->reactive() // Make this field reactive so it shows/hides automatically
+                                ->live(), // Ensure the form live-updates as state changes
+                        ]),
+                    Wizard\Step::make('Layanan')
+                        ->schema([
+                            Select::make('sub_method_id')
+                                ->label('Pilih Media Layanan')
+                                ->options(SubMethod::all()->pluck('name', 'id'))
+                            ->required(),
+                            Select::make('purpose_id')
+                                ->label('Tujuan Penggunaan Layanan')
+                                ->options(Purpose::all()->pluck('name', 'id'))
+                                ->reactive()
+                                ->required(),
+                            Select::make('service_id')
+                                ->label('Pilih Layananan yang dibutuhkan')
+                                ->options(Service::all()->pluck('name', 'id'))
+                                ->required(),
+                        ]),
+            ]);
+    }
+
+}

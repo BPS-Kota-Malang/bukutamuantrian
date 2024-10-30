@@ -1,0 +1,103 @@
+<?php
+
+namespace App\Filament\Pages;
+
+use App\Http\Controllers\WppConnectController;
+use Filament\Pages\Page;
+use Filament\Forms;
+use Illuminate\Support\Facades\Log;
+
+class WppConnect extends Page
+{
+    protected static string $view = 'filament.pages.wpp-connect';
+    protected static ?string $navigationLabel = 'Whatsapp Server';
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?int $navigationSort = 1;
+    protected static ?string $navigationGroup = 'Whatsapp Server';
+
+    public $qrCodeUrl;
+    public $connectionStatus; // New property for connection status
+    protected $wppConnectController;
+
+    // Constructor with dependency injection
+    public function __construct(WppConnectController $wppConnectController)
+    {
+        parent::__construct(); // Call the parent constructor
+        $this->wppConnectController = $wppConnectController; // Assign the controller
+    }
+
+    public function mount()
+    {
+        // Initialize any necessary properties
+        $this->qrCodeUrl = null;
+        $this->connectionStatus = 'Disconnected';
+    }
+
+    public function startSession()
+    {
+        try {
+            $response = $this->wppConnectController->createSession();
+
+            // Log the response for debugging
+            Log::info($response->getContent()); // Log the raw JSON response
+
+            // Check if the response is a JsonResponse
+            if ($response instanceof \Illuminate\Http\JsonResponse) {
+                $data = $response->getData(true); // Get the data as an array
+
+                // Check if qrCodeUrl is present in the response
+                if (isset($data['qrCodeUrl'])) {
+                    $this->qrCodeUrl = $data['qrCodeUrl'];
+                    session()->flash('message', 'Session started successfully! Scan the QR code.');
+                } else {
+                    $this->qrCodeUrl = null; // or set an error message
+                    Log::warning('QR code URL not found in response.');
+                    session()->flash('error', 'QR code URL not found in response.');
+                }
+            } else {
+                Log::error('Failed to start session: Unexpected response type.');
+                $this->qrCodeUrl = null; // or set an error message
+                session()->flash('error', 'Failed to start session: Unexpected response type.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error starting session: ' . $e->getMessage());
+            session()->flash('error', 'An error occurred while starting the session.');
+        }
+    }
+
+    public function checkConnectionState()
+    {
+        $sessionName = 'your_session_name'; // Replace with your actual session name
+        $url = 'https://api.wppconnect.io/v1/' . $sessionName . '/check-connection-state';
+
+        try {
+            $response = Http::get($url);
+            return $response;
+        } catch (\Exception $e) {
+            Log::error('Error checking connection status: ' . $e->getMessage());
+            return response()->json(['connected' => false], 500);
+        }
+    }
+
+    public function sendMessage(array $data)
+    {
+        try {
+            return $this->wppConnectController->sendMessage($data); // Directly call the controller method
+        } catch (\Exception $e) {
+            Log::error('Error sending message: ' . $e->getMessage());
+            session()->flash('error', 'An error occurred while sending the message.');
+        }
+    }
+
+    protected function getFormSchema(): array
+    {
+        return [
+            Forms\Components\TextInput::make('phone')
+                ->label('Phone Number')
+                ->required(),
+            Forms\Components\Textarea::make('message')
+                ->label('Message')
+                ->required(),
+        ];
+    }
+}
