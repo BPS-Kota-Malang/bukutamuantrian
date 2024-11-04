@@ -22,4 +22,9 @@ class SubMethod extends Model
         return $this->belongsTo(Method::class);
     }
 
+    public function Transaction() : BelongsTo
+    {
+        return $this->belongsTo(Transaction::class);
+    }
+
 }

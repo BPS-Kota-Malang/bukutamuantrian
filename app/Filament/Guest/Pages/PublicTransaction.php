@@ -154,8 +154,18 @@ class PublicTransaction extends Page implements HasForms
                                     ->required(fn (Get $get) => $get('work_id') === '1')
                                     ->searchable()
                                     ->hidden(fn (Get $get) => $get('work_id') !== '1') // Show only when work_id is 1
-                                    ->reactive() // Make this field reactive so it shows/hides automatically
-                                    ->live(),
+                                    ->reactive()
+                                    ->live()
+                                    ->createOptionForm([ // Allow adding a new institution if not found
+                                        TextInput::make('name')
+                                            ->label('Masukkan Nama Universitas')
+                                            ->required(),
+                                    ])
+                                    ->createOptionUsing(function ($data) {
+                                        return University::create([
+                                            'name' => $data['name'],
+                                        ])->id;
+                                    }),
                                 Select::make('institution_id')
                                     ->label('Pilih Institusi')
                                     ->options(Institution::all()->pluck('name', 'id')) // Populated with current institutions
@@ -265,7 +275,8 @@ class PublicTransaction extends Page implements HasForms
                 // Handle queue creation for specific services
                 $layanan = $this->form->getState()['sub_method_id'];
                 // dd($layanan);
-                if ($layanan == 4) {
+                if ($layanan == 4)
+                {
                     try {
                         // Get the last queue number or default to 1
                         $queueNumber = $queueService->getLastQueue() ?? 1;
@@ -288,17 +299,53 @@ class PublicTransaction extends Page implements HasForms
                         $whatsappService->sendMessage([
                             'phone' => $this->customer->phone, // Send to the customer's phone
                             'message' => "Halo, Sahabat Data!\n\n" .
+                                         "Terima kasih telah menggunakan layanan kami, berikut adalah detail antrian Anda:\n" .
                                          "Nama: {$customerName}\n" .
                                          "Nomor Antrian: {$queueNumber}\n" .
                                          "Layanan yang Dibutuhkan: {$serviceName}\n" .
+                                         "Media Layanan yang digunakan: {$layanan}\n" .
                                          "Tanggal pelayanan: {$queueDate}\n\n" .
-                                         "Tunjukkan pesan ini kepada petugas pelayanan. Terima kasih telah menggunakan layanan kami!",
+                                         "Tunjukkan pesan ini kepada petugas pelayanan saat anda datang ke PST BPS Kota Malang.",
                         ]);
 
                         // $whatsappService->sendMessage([
                         //     'phone' => $this->customer->phone, // Send to the customer's phone
                         //     'message' => 'Halo, Sahabat Data!Your queue number is ' . $queueNumber . '. Thank you for using our service!',
                         // ]);
+
+                    } catch (\Exception $e) {
+                        // Rollback the transaction
+                        DB::rollBack();
+                        // Log error and return user-friendly message
+                        Log::error('Error creating queue: ' . $e->getMessage());
+
+                        // Notify the user with an error message
+                        Notification::make()
+                            ->danger()
+                            ->title('Error')
+                            ->body('Error creating queue: ' . $e->getMessage())
+                            ->send();
+
+                        return;
+                    }
+                }
+                else {
+                    try {
+
+                        $queueDate = now()->format('d M Y');
+                        $customerName = $this->customer->name;
+                        $serviceName = Service::find($this->transaction->service_id)->name;
+
+                        $whatsappService->sendMessage([
+                            'phone' => $this->customer->phone, // Send to the customer's phone
+                            'message' => "Halo, Sahabat Data!\n\n" .
+                                         "Terima kasih telah menggunakan layanan kami, berikut adalah detail transaksi Anda:\n" .
+                                         "Nama: {$customerName}\n" .
+                                         "Layanan yang Dibutuhkan: {$serviceName}\n" .
+                                         "Media Layanan yang digunakan: {$layanan}\n" .
+                                         "Tanggal pelayanan: {$queueDate}\n\n" .
+                                         "Terima kasih telah menggunakan layanan kami!",
+                        ]);
 
                     } catch (\Exception $e) {
                         // Rollback the transaction
