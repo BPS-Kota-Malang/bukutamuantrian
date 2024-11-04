@@ -29,7 +29,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1' # Adjust to your Laravel PHP version
+          php-version: '8.2' # Adjust to your Laravel PHP version
 
       # 5. Install Composer Dependencies (Production Mode)
       - name: Install Composer dependencies
