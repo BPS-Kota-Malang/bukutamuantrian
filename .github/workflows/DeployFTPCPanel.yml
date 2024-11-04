@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4.1.2
 
       - name: List files
-        run: ls -la /home/runner/work/sistem-antrian/
+        run: ls -la /home/runner/work/sistem-antrian/sistem-antrian
 
       - name: ⚙️ Use PHP 8.2
         uses: shivammathur/setup-php@main
