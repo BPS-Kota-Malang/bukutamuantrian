@@ -23,7 +23,7 @@ jobs:
 
       # 3. Install Node.js Dependencies and Build Frontend Assets
       - name: Install dependencies
-        run: npm install && npm run build
+        run: npm install
 
       # 4. Set Up PHP for Laravel
       - name: Set up PHP
