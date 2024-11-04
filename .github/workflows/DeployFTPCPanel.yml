@@ -8,13 +8,13 @@ jobs:
     name: 🚀 Deploy to CPanel
     runs-on: ubuntu-latest
     steps:
-      
+
       - name: 🚚 Get Latest Code
         uses: actions/checkout@v4.1.2
-      
+
       - name: List files
-        run: ls -la /home/runner/work/new-simmag/new-simmag
-      
+        run: ls -la /home/runner/work/sistem-antrian/
+
       - name: ⚙️ Use PHP 8.2
         uses: shivammathur/setup-php@main
         with:
