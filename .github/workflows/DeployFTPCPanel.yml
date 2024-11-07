@@ -65,7 +65,7 @@ jobs:
             vendor/
 
       # 9. Post-deployment actions (e.g., permissions for storage)
-      - name: Set Storage Permissions
-        run: |
-          chmod -R 775 storage
-          chmod -R 775 bootstrap/cache
+      # - name: Set Storage Permissions
+      #   run: |
+      #     chmod -R 775 storage
+      #     chmod -R 775 bootstrap/cache
