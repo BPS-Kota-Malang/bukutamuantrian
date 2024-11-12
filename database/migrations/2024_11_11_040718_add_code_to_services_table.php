@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('services', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('code');
-            $table->timestamps();
+        Schema::table('services', function (Blueprint $table) {
+            $table->string('code')->nullable()->after('name'); // Add nullable 'code' column after 'name'
         });
     }
 
@@ -24,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('services');
+        Schema::table('services', function (Blueprint $table) {
+            $table->dropColumn('code'); // Remove 'code' column if rolled back
+        });
     }
 };

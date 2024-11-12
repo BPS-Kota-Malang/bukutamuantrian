@@ -28,8 +28,11 @@ class ServiceResource extends Resource
         return $form
             ->schema([
                 TextInput::make('name')
-                ->required()
-                ->maxLength(255),
+                    ->required()
+                    ->maxLength(255),
+                TextInput::make('code')
+                    ->required()
+                    ->maxLength(255),
             ]);
     }
 
@@ -38,6 +41,7 @@ class ServiceResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name'),
+                TextColumn::make('code'),
             ])
             ->filters([
                 //

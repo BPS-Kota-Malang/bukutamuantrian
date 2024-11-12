@@ -1,0 +1,17 @@
+<div x-data="{ open: false }" x-show="open" @show-modal.window="open = true" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
+    <div class="w-3/4 p-6 bg-white rounded-lg shadow-lg">
+        <h2 class="mb-4 text-lg font-bold">Transaction Details</h2>
+        <p>Queue Number: {{ $queue['queue_number'] }}</p>
+        <p>Customer Name: {{ $customer['name'] }}</p>
+        <p>Transaction Date: {{ $transaction['date'] }}</p>
+        <p>Service: {{ $transaction['service_name'] }}</p>
+        <p>Status: {{ $transaction['status'] }}</p>
+        <!-- Add other fields as needed -->
+
+        <!-- Print Button -->
+        <button onclick="window.print()" class="px-4 py-2 mt-4 text-white bg-blue-500 rounded">Print</button>
+
+        <!-- Close Modal Button -->
+        <button @click="open = false" class="px-4 py-2 mt-4 text-white bg-red-500 rounded">Close</button>
+    </div>
+</div>

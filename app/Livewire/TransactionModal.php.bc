@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Http\Livewire;
+
+use Livewire\Component;
+
+class TransactionModal extends Component
+{
+    public $isOpen = false;
+    public $queueNumber;
+
+    protected $listeners = ['showSuccessModal' => 'openModal'];
+
+    public function openModal($queueNumber)
+    {
+        $this->queueNumber = $queueNumber;
+        $this->isOpen = true;
+    }
+
+    public function closeModal()
+    {
+        $this->isOpen = false;
+    }
+
+    public function render()
+    {
+        return view('livewire.transaction-modal');
+    }
+}

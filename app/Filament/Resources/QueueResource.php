@@ -5,7 +5,9 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\QueueResource\Pages;
 use App\Filament\Resources\QueueResource\RelationManagers;
 use App\Models\Queue;
+use Filament\Actions\Action;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -44,13 +46,18 @@ class QueueResource extends Resource
                     ->label('Tanggal Pelayanan'),
                 TextColumn::make('number')
                     ->label('Nomor Antrian'),
-                SelectColumn::make('status')
-                    ->editable(fn ($record) => Carbon::parse($record->date)->isToday())
-                    ->options([
-                        'queue' => 'Antrian',
-                        'onprocess' => 'Dilayani',
-                        'done' => 'Selesai',
-                    ])
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->action(fn ($record) => Action::make('edit')->form([
+                        Select::make('status')
+                            ->options([
+                                'pending' => 'Pending',
+                                'approved' => 'Approved',
+                                'rejected' => 'Rejected',
+                            ])
+                            ->default($record->status),
+                    ]))
+                    ->sortable(),
             ])
             ->filters([
                 //

@@ -63,13 +63,15 @@ class PublicTransaction extends Page implements HasForms
 
     protected $queueService;
 
+    protected bool $showTransactionModal = false;
+
     // public function __construct(QueueService $queueService)
     // {
     //     $this->queueService = $queueService; // Inject the service in the constructor
     // }
 
 
-    public function mount ()
+    public function mount()
     {
         // Ensure the form fields are initialized
         $this->form->fill([
@@ -91,7 +93,6 @@ class PublicTransaction extends Page implements HasForms
 
         $this->services = Service::all()->toArray();
     }
-
 
 
     public function form(Form $form): Form
@@ -132,75 +133,75 @@ class PublicTransaction extends Page implements HasForms
                                     'female' => 'Perempuan',
                                 ])
                                 ->required(),
-                                    ]),
-                        Wizard\Step::make('Pendidikan & Pekerjaan')
-                            ->schema([
-                                Select::make('education_id')
-                                    ->label('Pendidikan terakhir')
-                                    ->options(Education::all()->pluck('name', 'id'))
-                                    ->required(),
-                                Select::make('work_id')
-                                    ->label('Pilih Pekerjaan Anda')
-                                    ->options(Work::all()->pluck('name', 'id'))
-                                    ->required()
-                                    ->reactive() // Make this field reactive to allow dynamic form updates
-                                    ->afterStateUpdated(function (callable $set, $state) {
-                                        $set('university_id', null); // Reset 'university_id' when 'work_id' is updated
-                                        $set('institution_id', null); // Reset 'institution_id' when 'work_id' is updated
-                                    }),
-                                Select::make('university_id')
-                                    ->label('Pilih Universitas')
-                                    ->options(University::all()->pluck('name', 'id')) // Make sure to populate this with your actual university data
-                                    ->required(fn (Get $get) => $get('work_id') === '1')
-                                    ->searchable()
-                                    ->hidden(fn (Get $get) => $get('work_id') !== '1') // Show only when work_id is 1
-                                    ->reactive()
-                                    ->live()
-                                    ->createOptionForm([ // Allow adding a new institution if not found
-                                        TextInput::make('name')
-                                            ->label('Masukkan Nama Universitas')
-                                            ->required(),
-                                    ])
-                                    ->createOptionUsing(function ($data) {
-                                        return University::create([
-                                            'name' => $data['name'],
-                                        ])->id;
-                                    }),
-                                Select::make('institution_id')
-                                    ->label('Pilih Institusi')
-                                    ->options(Institution::all()->pluck('name', 'id')) // Populated with current institutions
-                                    // ->relationship('institution', 'name')
-                                    ->required(fn (Get $get) => $get('work_id') && $get('work_id') !== '1') // Required only if work_id is NOT '1'
-                                    ->hidden(fn (Get $get) => !$get('work_id') || $get('work_id') == '1') // Show only when work_id is not '1'
-                                    ->reactive()
-                                    ->createOptionForm([ // Allow adding a new institution if not found
-                                        TextInput::make('name')
-                                            ->label('Masukkan Nama Institusi')
-                                            ->required(),
-                                    ])
-                                    ->createOptionUsing(function ($data) {
-                                        return Institution::create([
-                                            'name' => $data['name'],
-                                        ])->id;
-                                    })
-                                    ->searchable(), // Allows searching through the institution list
-                            ]),
-                        Wizard\Step::make('Layanan')
-                            ->schema([
-                                Select::make('sub_method_id')
-                                    ->label('Pilih Media Layanan')
-                                    ->options(SubMethod::all()->pluck('name', 'id'))
+                        ]),
+                    Wizard\Step::make('Pendidikan & Pekerjaan')
+                        ->schema([
+                            Select::make('education_id')
+                                ->label('Pendidikan terakhir')
+                                ->options(Education::all()->pluck('name', 'id'))
                                 ->required(),
-                                Select::make('purpose_id')
-                                    ->label('Tujuan Penggunaan Layanan')
-                                    ->options(Purpose::all()->pluck('name', 'id'))
-                                    ->reactive()
-                                    ->required(),
-                                Select::make('service_id')
-                                    ->label('Pilih Layananan yang dibutuhkan')
-                                    ->options(Service::all()->pluck('name', 'id'))
-                                    ->required(),
-                            ]),
+                            Select::make('work_id')
+                                ->label('Pilih Pekerjaan Anda')
+                                ->options(Work::all()->pluck('name', 'id'))
+                                ->required()
+                                ->reactive() // Make this field reactive to allow dynamic form updates
+                                ->afterStateUpdated(function (callable $set, $state) {
+                                    $set('university_id', null); // Reset 'university_id' when 'work_id' is updated
+                                    $set('institution_id', null); // Reset 'institution_id' when 'work_id' is updated
+                                }),
+                            Select::make('university_id')
+                                ->label('Pilih Universitas')
+                                ->options(University::all()->pluck('name', 'id')) // Make sure to populate this with your actual university data
+                                ->required(fn(Get $get) => $get('work_id') === '1')
+                                ->searchable()
+                                ->hidden(fn(Get $get) => $get('work_id') !== '1') // Show only when work_id is 1
+                                ->reactive()
+                                ->live()
+                                ->createOptionForm([ // Allow adding a new institution if not found
+                                    TextInput::make('name')
+                                        ->label('Masukkan Nama Universitas')
+                                        ->required(),
+                                ])
+                                ->createOptionUsing(function ($data) {
+                                    return University::create([
+                                        'name' => $data['name'],
+                                    ])->id;
+                                }),
+                            Select::make('institution_id')
+                                ->label('Pilih Institusi')
+                                ->options(Institution::all()->pluck('name', 'id')) // Populated with current institutions
+                                // ->relationship('institution', 'name')
+                                ->required(fn(Get $get) => $get('work_id') && $get('work_id') !== '1') // Required only if work_id is NOT '1'
+                                ->hidden(fn(Get $get) => !$get('work_id') || $get('work_id') == '1') // Show only when work_id is not '1'
+                                ->reactive()
+                                ->createOptionForm([ // Allow adding a new institution if not found
+                                    TextInput::make('name')
+                                        ->label('Masukkan Nama Institusi')
+                                        ->required(),
+                                ])
+                                ->createOptionUsing(function ($data) {
+                                    return Institution::create([
+                                        'name' => $data['name'],
+                                    ])->id;
+                                })
+                                ->searchable(), // Allows searching through the institution list
+                        ]),
+                    Wizard\Step::make('Layanan')
+                        ->schema([
+                            Select::make('sub_method_id')
+                                ->label('Pilih Media Layanan')
+                                ->options(SubMethod::all()->pluck('name', 'id'))
+                                ->required(),
+                            Select::make('purpose_id')
+                                ->label('Tujuan Penggunaan Layanan')
+                                ->options(Purpose::all()->pluck('name', 'id'))
+                                ->reactive()
+                                ->required(),
+                            Select::make('service_id')
+                                ->label('Pilih Layananan yang dibutuhkan')
+                                ->options(Service::all()->pluck('name', 'id'))
+                                ->required(),
+                        ]),
                 ])->submitAction(new HtmlString('<button class="bg-yellow-200" type="submit">Submit</button>')),
             ]);
     }
@@ -221,7 +222,6 @@ class PublicTransaction extends Page implements HasForms
                 'education_id' => $customer->education_id,
                 'university_id' => $customer->university_id,
                 'institution_id' => $customer->institution_id,
-                // Include other fields if necessary...
             ]);
         }
     }
@@ -274,13 +274,14 @@ class PublicTransaction extends Page implements HasForms
 
                 // Handle queue creation for specific services
                 $layanan = $this->form->getState()['sub_method_id'];
+
+                $service_id = $this->transaction->service_id;
                 // dd($layanan);
-                if ($layanan == 4)
-                {
+                if ($layanan == 4) {
                     try {
                         // Get the last queue number or default to 1
                         $queueNumber = $queueService->getLastQueue() ?? 1;
-                        // dd($queueNumber);
+
                         // Validate that the queue number is not null
                         if (empty($queueNumber)) {
                             throw new \Exception('Queue number generation failed.');
@@ -291,62 +292,6 @@ class PublicTransaction extends Page implements HasForms
                             'number' => $queueNumber,
                             'transaction_id' => $this->transaction->id,
                         ]);
-
-                        $queueDate = now()->format('d M Y');
-                        $customerName = $this->customer->name;
-                        $serviceName = Service::find($this->transaction->service_id)->name;
-
-                        $whatsappService->sendMessage([
-                            'phone' => $this->customer->phone, // Send to the customer's phone
-                            'message' => "Halo, Sahabat Data!\n\n" .
-                                         "Terima kasih telah menggunakan layanan kami, berikut adalah detail antrian Anda:\n" .
-                                         "Nama: {$customerName}\n" .
-                                         "Nomor Antrian: {$queueNumber}\n" .
-                                         "Layanan yang Dibutuhkan: {$serviceName}\n" .
-                                         "Media Layanan yang digunakan: {$layanan}\n" .
-                                         "Tanggal pelayanan: {$queueDate}\n\n" .
-                                         "Tunjukkan pesan ini kepada petugas pelayanan saat anda datang ke PST BPS Kota Malang.",
-                        ]);
-
-                        // $whatsappService->sendMessage([
-                        //     'phone' => $this->customer->phone, // Send to the customer's phone
-                        //     'message' => 'Halo, Sahabat Data!Your queue number is ' . $queueNumber . '. Thank you for using our service!',
-                        // ]);
-
-                    } catch (\Exception $e) {
-                        // Rollback the transaction
-                        DB::rollBack();
-                        // Log error and return user-friendly message
-                        Log::error('Error creating queue: ' . $e->getMessage());
-
-                        // Notify the user with an error message
-                        Notification::make()
-                            ->danger()
-                            ->title('Error')
-                            ->body('Error creating queue: ' . $e->getMessage())
-                            ->send();
-
-                        return;
-                    }
-                }
-                else {
-                    try {
-
-                        $queueDate = now()->format('d M Y');
-                        $customerName = $this->customer->name;
-                        $serviceName = Service::find($this->transaction->service_id)->name;
-
-                        $whatsappService->sendMessage([
-                            'phone' => $this->customer->phone, // Send to the customer's phone
-                            'message' => "Halo, Sahabat Data!\n\n" .
-                                         "Terima kasih telah menggunakan layanan kami, berikut adalah detail transaksi Anda:\n" .
-                                         "Nama: {$customerName}\n" .
-                                         "Layanan yang Dibutuhkan: {$serviceName}\n" .
-                                         "Media Layanan yang digunakan: {$layanan}\n" .
-                                         "Tanggal pelayanan: {$queueDate}\n\n" .
-                                         "Terima kasih telah menggunakan layanan kami!",
-                        ]);
-
                     } catch (\Exception $e) {
                         // Rollback the transaction
                         DB::rollBack();
@@ -372,10 +317,10 @@ class PublicTransaction extends Page implements HasForms
 
                 // Notify the user with an error message
                 Notification::make()
-                ->danger()
-                ->title('Error')
-                ->body('An error occurred while saving transaction data :' . $e->getMessage())
-                ->send();
+                    ->danger()
+                    ->title('Error')
+                    ->body('An error occurred while saving transaction data :' . $e->getMessage())
+                    ->send();
 
                 return;
             }
@@ -383,16 +328,114 @@ class PublicTransaction extends Page implements HasForms
             // Commit the transaction since everything is successful
             DB::commit();
 
-            Notification::make()
-                            ->success()
-                            ->title('Success')
-                            ->body('Data saved successfully')
-                            ->send();
 
+
+            // Assuming this is the completion part of the transaction process in your Filament resource
+            // $this->emit('showTransactionModal', $this->transaction, $this->customer, $this->queue);
+            $layanan_choosed = SubMethod::find($layanan)->value('name');
+
+            if ($layanan == 4) {
+
+                $prefix = Service::find($service_id)->code ?? ''; // Use the code column for prefix, default to empty string if null
+
+
+                try {
+                    $queueDate = now()->format('d M Y');
+                    $customerName = $this->customer->name;
+                    $serviceName = Service::find($this->transaction->service_id)->name;
+                    $queueNumberFormatted = str_pad($queueNumber, 3, '0', STR_PAD_LEFT);
+                    $whatsappService->sendMessage([
+                        'phone' => $this->customer->phone, // Send to the customer's phone
+                        'message' => "Halo, Sahabat Data!\n\n" .
+                            "Terima kasih telah menggunakan layanan kami, berikut adalah detail antrian Anda:\n" .
+                            "Nama: {$customerName}\n" .
+                            "Nomor Antrian: {$prefix}-{$queueNumberFormatted}\n" .
+                            "Layanan yang Dibutuhkan: {$serviceName}\n" .
+                            "Media Layanan yang digunakan: {$layanan_choosed}\n" .
+                            "Tanggal pelayanan: {$queueDate}\n\n" .
+                            "Tunjukkan pesan ini kepada petugas pelayanan saat anda datang ke PST BPS Kota Malang.",
+                    ]);
+                } catch (\Exception $e) {
+
+                    // Log error and return user-friendly message
+                    Log::error('Error Send Whatsapp Message But Data Already Saved :' . $e->getMessage());
+
+                    // Notify the user with an error message
+                    Notification::make()
+                        ->danger()
+                        ->title('Error')
+                        ->body('Error Send Whatsapp Message But Data Already Saved : ' . $e->getMessage())
+                        ->send();
+
+                    return;
+                }
+            } else {
+                try {
+
+                    $queueDate = now()->format('d M Y');
+                    $customerName = $this->customer->name;
+                    $serviceName = Service::find($this->transaction->service_id)->name;
+
+                    $whatsappService->sendMessage([
+                        'phone' => $this->customer->phone, // Send to the customer's phone
+                        'message' => "Halo, Sahabat Data!\n\n" .
+                            "Terima kasih telah menggunakan layanan kami, berikut adalah detail transaksi Anda:\n" .
+                            "Nama: {$customerName}\n" .
+                            "Layanan yang Dibutuhkan: {$serviceName}\n" .
+                            "Media Layanan yang digunakan: {$layanan_choosed}\n" .
+                            "Tanggal pelayanan: {$queueDate}\n\n" .
+                            "Terima kasih telah menggunakan layanan kami!",
+                    ]);
+                } catch (\Exception $e) {
+                    // Rollback the transaction
+                    DB::rollBack();
+                    // Log error and return user-friendly message
+                    Log::error('Error Send Whatsapp Message But Data Already Saved :' . $e->getMessage());
+
+                    // Notify the user with an error message
+                    Notification::make()
+                        ->danger()
+                        ->title('Error')
+                        ->body('Error Send Whatsapp Message But Data Already Saved : ' . $e->getMessage())
+                        ->send();
+
+                    return;
+                }
+            }
+
+            Notification::make()
+                ->success()
+                ->title('Success')
+                ->body('Data saved successfully')
+                ->send();
+
+            try {
+                // Assuming this is inside your submit method
+                $this->showTransactionModal([
+                    'transaction' => $this->transaction,
+                    'customer' => $this->customer,
+                    'queue' => $this->queue,
+                ]);
+
+                // $this->emit('showTransactionModal', [
+                //     'transaction' => $this->transaction,
+                //     'customer' => $this->customer,
+                //     'queue' => $this->queue,
+                // ]);
+
+            } catch (\Exception $e) {
+                Log::error('Error show Modal: ' . $e->getMessage());
+
+                // Notify the user with an error message
+                Notification::make()
+                    ->danger()
+                    ->title('Error')
+                    ->body('An error occurred while show modal :' . $e->getMessage())
+                    ->send();
+            }
             // Redirect to the desired route with success message
             return redirect()->route('filament.guest.pages.public-transaction')
                 ->with('success', 'Data saved successfully.');
-
         } catch (\Exception $e) {
             // Rollback in case of any unforeseen errors
             DB::rollBack();
@@ -410,6 +453,4 @@ class PublicTransaction extends Page implements HasForms
             return;
         }
     }
-
-
 }

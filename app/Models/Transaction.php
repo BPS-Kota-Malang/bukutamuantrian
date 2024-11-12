@@ -33,4 +33,9 @@ class Transaction extends Model
         return $this->belongsTo(SubMethod::class);
     }
 
+    public function queue()
+    {
+        return $this->belongsTo(Queue::class);
+    }
+
 }

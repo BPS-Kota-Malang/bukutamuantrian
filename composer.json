@@ -10,6 +10,7 @@
         "filament/forms": "^3.2",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
+        "livewire/livewire": "^3.5",
         "wppconnect-team/wppconnect-laravel-client": "^1.0"
     },
     "require-dev": {

@@ -35,9 +35,15 @@ class TransactionResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('customer.name')
-                ->label('Nama Pengguna'),
+                    ->label('Nama Pengguna'),
                 TextColumn::make('sub_method.name')
-                ->label('Media Pelayanan'),
+                    ->label('Media Pelayanan'),
+                TextColumn::make('queue_id')
+                    ->label('Queue ID')
+                    ->getStateUsing(fn ($record) => $record->queue ? $record->queue->id : 'No Queue') // Checks for queue before accessing ID
+                    ->sortable(),
+
+
             ])
             ->filters([
                 //

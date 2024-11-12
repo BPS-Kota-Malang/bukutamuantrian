@@ -22,6 +22,52 @@ class WhatsappService
         return SecretKey::first();
     }
 
+    public function generateToken($sessionName,$secretKey)
+    {
+        // $secretKey = $this->getSecretKey();
+
+        // if (!$secretKey) {
+        //     Log::error("Secret key not found.");
+        //     return [
+        //         'message' => 'Secret key not found.',
+        //         'error' => 'Secret key is missing from the database.',
+        //     ];
+        // }
+        $key = $secretKey;
+        $session = $sessionName;
+        $url = "{$this->baseUrl}/api/{$session}/{$key}/generate-token";
+
+        Log::info("Request URL: " . $url);
+
+        $response = Http::post($url);
+
+        Log::info("Response Body: " . $response->body()); // Log the response body
+        // dd($response);
+        // Check if the response was successful
+        if ($response->successful()) {
+            // Parse the JSON response body
+            $data = $response->json();
+
+            // Access the specific values you need
+            $session = $data['session'] ?? null;
+            $status = $data['status'] ?? null;
+            $token = $data['token'] ?? null;
+
+            // Use or return the values as needed
+            return [
+                'session' => $session,
+                'status' => $status,
+                'token' => $token,
+            ];
+        } else {
+            // Handle the error
+            return [
+                'error' => 'Request failed with status code: ' . $response->status()
+            ];
+        }
+
+    }
+
     public function createSession()
     {
         $secretKey = $this->getSecretKey();

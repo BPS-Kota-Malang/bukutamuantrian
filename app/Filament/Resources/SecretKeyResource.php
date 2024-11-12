@@ -34,6 +34,10 @@ class SecretKeyResource extends Resource
                     ->required()
                     ->label('Session Name')
                     ->placeholder('Enter session name'),
+                Forms\Components\TextInput::make('server_host_url')
+                    ->required()
+                    ->label('Server URL')
+                    ->placeholder('Enter Server URL'),
             ]);
     }
 
@@ -41,10 +45,14 @@ class SecretKeyResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('server_host_url')
+                    ->label('Server URL'),
                 TextColumn::make('key')
                     ->label('Secret Key'),
                 TextColumn::make('session_name')
                     ->label('Session Name'),
+                TextColumn::make('token')
+                    ->label('Full Token'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->disabled(SecretKey::count() === 0),

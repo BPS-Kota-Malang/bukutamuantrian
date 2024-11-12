@@ -38,7 +38,7 @@ class MethodResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make(''),
+                TextColumn::make('name'),
             ])
             ->filters([
                 //
