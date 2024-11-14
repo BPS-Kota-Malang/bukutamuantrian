@@ -12,6 +12,8 @@ class TransactionModal extends Component
 
     protected $listeners = ['showTransactionModal'];
 
+    public $showModal = false; // To control modal visibility
+
     public function render()
     {
         return view('livewire.transaction-modal');

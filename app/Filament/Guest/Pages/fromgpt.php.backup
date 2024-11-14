@@ -1,0 +1,135 @@
+<?php
+
+public function submit()
+{
+    // Start a database transaction to ensure all operations succeed or none
+    DB::beginTransaction();
+
+    try {
+        // Save customer data inside a try-catch block
+        try {
+            $normalizedPhone = Customer::normalizePhoneNumber($this->form->getState()['phone']);
+
+            $this->customer = Customer::firstOrCreate(
+                [
+                    'email' => $this->form->getState()['email'],
+                    'phone' => $normalizedPhone
+                ],
+                [
+                    'name' => $this->form->getState()['name'],
+                    'age' => $this->form->getState()['age'],
+                    'gender' => $this->form->getState()['gender'],
+                    'work_id' => $this->form->getState()['work_id'],
+                    'education_id' => $this->form->getState()['education_id'],
+                    'university_id' => $this->form->getState()['university_id'] ?? null,
+                    'institution_id' => $this->form->getState()['institution_id'] ?? null,
+                ]
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error saving customer: ' . $e->getMessage());
+            return $this->notifyError('An error occurred while saving customer data.');
+        }
+
+        // Save transaction data
+        try {
+            $queueService = app(QueueService::class);
+            $whatsappService = app(WhatsappService::class);
+
+            $this->transaction = Transaction::create([
+                'customer_id' => $this->customer->id,
+                'service_id' => $this->form->getState()['service_id'],
+                'purpose_id' => $this->form->getState()['purpose_id'],
+                'sub_method_id' => $this->form->getState()['sub_method_id'],
+            ]);
+
+            // Handle queue creation for specific services
+            $layanan = $this->form->getState()['sub_method_id'];
+
+            if ($layanan == 4) {
+                $queueNumber = $queueService->getLastQueue() ?? 1;
+
+                if (empty($queueNumber)) {
+                    throw new \Exception('Queue number generation failed.');
+                }
+
+                $this->queue = Queue::create([
+                    'date' => Carbon::today(),
+                    'number' => $queueNumber,
+                    'transaction_id' => $this->transaction->id,
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error saving transaction: ' . $e->getMessage());
+            Notification::make()->danger()->title('Error')->body('An error occurred while saving transaction data.')->send();
+            return;
+        }
+
+        // Commit the transaction
+        DB::commit();
+
+        // Trigger the modal to show after saving data
+        $this->openModal = true;  // Set this to true to trigger the modal
+
+        // Send WhatsApp Notification (after data is saved and modal is triggered)
+        $this->sendWhatsappNotification($layanan, $whatsappService);
+
+        // Notify user of success
+        Notification::make()
+            ->success()
+            ->title('Success')
+            ->body('Data saved successfully')
+            ->send();
+
+        // Optionally, redirect to the desired route after submission
+        return redirect()->route('filament.guest.pages.public-transaction')
+            ->with('success', 'Data saved successfully.');
+
+    } catch (\Exception $e) {
+        // Rollback in case of any unforeseen errors
+        DB::rollBack();
+        Log::error('Unexpected error: ' . $e->getMessage());
+        Notification::make()
+            ->danger()
+            ->title('Unexpected Error')
+            ->body('An unexpected error occurred. Please try again.')
+            ->send();
+        return;
+    }
+}
+
+private function sendWhatsappNotification($layanan, $whatsappService)
+{
+    // Check the service for queue-based or normal transaction-based WhatsApp message
+    if ($layanan == 4) {
+        $prefix = Service::find($this->transaction->service_id)->code ?? '';
+        $queueDate = now()->format('d M Y');
+        $queueNumberFormatted = str_pad($this->queue->number, 3, '0', STR_PAD_LEFT);
+        $message = "Halo, Sahabat Data!\n\n" .
+            "Terima kasih telah menggunakan layanan kami, berikut adalah detail antrian Anda:\n" .
+            "Nama: {$this->customer->name}\n" .
+            "Nomor Antrian: {$prefix}-{$queueNumberFormatted}\n" .
+            "Layanan yang Dibutuhkan: " . SubMethod::find($this->form->getState()['sub_method_id'])->name . "\n" .
+            "Tanggal pelayanan: {$queueDate}\n\n" .
+            "Tunjukkan pesan ini kepada petugas pelayanan saat anda datang ke PST BPS Kota Malang.";
+    } else {
+        $message = "Halo, Sahabat Data!\n\n" .
+            "Terima kasih telah menggunakan layanan kami, berikut adalah detail transaksi Anda:\n" .
+            "Nama: {$this->customer->name}\n" .
+            "Layanan yang Dibutuhkan: " . SubMethod::find($this->form->getState()['sub_method_id'])->name . "\n" .
+            "Tanggal pelayanan: " . now()->format('d M Y') . "\n\n" .
+            "Terima kasih telah menggunakan layanan kami!";
+    }
+
+    try {
+        $whatsappService->sendMessage([
+            'phone' => $this->customer->phone,
+            'message' => $message,
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Error Send Whatsapp Message: ' . $e->getMessage());
+        Notification::make()->danger()->title('Error Sending WhatsApp')->body('Error sending WhatsApp message: ' . $e->getMessage())->send();
+    }
+}
