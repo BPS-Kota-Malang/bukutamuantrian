@@ -10,6 +10,7 @@ class SecretKey extends Model
     protected $fillable = [
         'key',
         'session_name',
-        'token'
+        'token',
+        'server_host_url',
     ];
 }

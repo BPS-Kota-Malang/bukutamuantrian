@@ -42,6 +42,7 @@ class CreateSecretKey extends CreateRecord
             $data = $this->form->getState();
             $sessionName = $data['session_name'];
             $secretKey = $data['key'];
+            $server_host_url = $data['server_host_url'];
 
             // Instantiate the WhatsappService and generate the token
             $whatsappService = new WhatsappService();
@@ -51,9 +52,14 @@ class CreateSecretKey extends CreateRecord
             // dd($token);
             // Save or update the token in the database
             SecretKey::updateOrCreate(
-                ['session_name' => $token['session']],
-                ['key' => $secretKey,
-                'token' => $token['token']]
+                [
+                    'session_name' => $token['session']
+                ],
+                [
+                    'key' => $secretKey,
+                    'token' => $token['token'],
+                    'server_host_url' => $server_host_url
+                ]
             );
 
             Notification::make()

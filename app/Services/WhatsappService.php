@@ -13,13 +13,20 @@ class WhatsappService
 
     public function __construct()
     {
-        $this->baseUrl = env('WPP_CONNECT_BASE_URL');
+        $this->baseUrl = $this->getHostURL();
     }
 
     public function getSecretKey()
     {
         // Logic to retrieve the secret key
         return SecretKey::first();
+    }
+
+
+    public function getHostURL()
+    {
+        // Logic to retrieve the secret key
+        return $this->getSecretKey()->server_host_url;
     }
 
     public function generateToken($sessionName,$secretKey)
