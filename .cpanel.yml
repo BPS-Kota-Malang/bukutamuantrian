@@ -1,7 +1,7 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/username/public_html  # Update this path
+    - export DEPLOYPATH=/home/u1573348/public_html/repo.bpskotamalang.id  # Update this path
     - /bin/cp -R * $DEPLOYPATH  # Copies all project files
     - cd $DEPLOYPATH
     - composer install --no-dev --optimize-autoloader  # Installs PHP dependencies
