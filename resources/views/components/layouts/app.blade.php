@@ -15,6 +15,8 @@
             }
         </style>
 
+        {{-- <script src="{{ asset('js/queue-announcement.js') }}"></script> --}}
+
         @filamentStyles
         @vite('resources/css/app.css')
     </head>
@@ -24,5 +26,8 @@
 
         @filamentScripts
         @vite('resources/js/app.js')
+        @yield('scripts')
+        {{-- @vite('resources/js/queue-announcement.js') --}}
+        {{-- <script src="{{ asset('js/queue-announcement.js') }}"></script> --}}
     </body>
 </html>

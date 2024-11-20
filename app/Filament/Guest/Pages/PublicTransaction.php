@@ -326,10 +326,7 @@ class PublicTransaction extends Page implements HasForms
             // Commit the transaction since everything is successful
             DB::commit();
 
-
-
             // Assuming this is the completion part of the transaction process in your Filament resource
-            // $this->emit('showTransactionModal', $this->transaction, $this->customer, $this->queue);
             $layanan_choosed = SubMethod::find($layanan)->value('name');
 
             if ($layanan == 4) {
@@ -408,20 +405,7 @@ class PublicTransaction extends Page implements HasForms
                 ->send();
 
             try {
-                // Assuming this is inside your submit method
-                $this->dispatchBrowserEvent('showTransactionModal', [
-                    'transaction' => $this->transaction,
-                    'customer' => $this->customer,
-                    'queue' => $this->queue,
-                ]);
-                $this->showTransactionModal();
-                // $this->openModal = true;
-                // $this->emit('showTransactionModal', [
-                //     'transaction' => $this->transaction,
-                //     'customer' => $this->customer,
-                //     'queue' => $this->queue,
-                // ]);
-
+                $this->emit('showTransactionModal', $this->transaction, $this->customer, $this->queue);
             } catch (\Exception $e) {
                 Log::error('Error show Modal: ' . $e->getMessage());
 
@@ -453,57 +437,4 @@ class PublicTransaction extends Page implements HasForms
         }
     }
 
-    // protected function showTransactionModal()
-    // {
-    //     $this->openModal = true;// Open the modal with transaction details
-    // }
-
-    protected function transactionAction(): Action
-    {
-        return Action::make('transactionModal')
-            ->label('Transaction Details')
-            ->modalButton('Close')
-            ->modalHeading('Transaction Completed')
-            ->modalContent(view('filament.guest.pages.transaction-modal', [
-                'transaction' => $this->transaction,
-                'customer' => $this->customer,
-                'queue' => $this->queue,
-            ]));
-    }
-
-    public function actions(): array
-    {
-        return [
-            Action::make('showTransactionDetails') // Name of the action
-                ->label('View Transaction Details')  // The button text that will be shown
-                ->modalHeading('Transaction Details') // The modal's heading
-                ->modalButton('Close') // The button text to close the modal
-                ->modalWidth('lg') // Optional: you can define the size of the modal (lg, sm, etc.)
-                ->action(function () {
-                    // When clicked, it will trigger showing the modal
-                    $this->showTransactionModal();
-                })
-                ->modalContent(view('filament.guest.pages.transaction-modal', [
-                    'transaction' => $this->transaction,  // Pass the transaction data to the modal view
-                    'customer' => $this->customer,
-                    'queue' => $this->queue,
-                ])),
-        ];
-    }
-
-    // Modal that will be conditionally displayed
-    public function getModal(): array
-    {
-        return [
-            'modal' => [
-                'title' => 'Transaction Completed',
-                'content' => view('filament.guest.pages.transaction-modal', [
-                    'transaction' => $this->transaction,
-                    'customer' => $this->customer,
-                    'queue' => $this->queue,
-                ]),
-                'open' => $this->openModal, // This is a boolean flag that controls the modal visibility
-            ],
-        ];
-    }
 }
