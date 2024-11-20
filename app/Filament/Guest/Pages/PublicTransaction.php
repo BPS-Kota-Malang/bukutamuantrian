@@ -38,6 +38,8 @@ class PublicTransaction extends Page implements HasForms
 
     protected static string $view = 'filament.guest.pages.public-transaction';
 
+    // protected static string $heading = 'filament.guest.pages.public-transaction';
+
     public $name;
     public $phone;
     public $email;
@@ -201,7 +203,8 @@ class PublicTransaction extends Page implements HasForms
                                 ->required(),
                         ]),
                 ])->submitAction(new HtmlString('<button class="bg-yellow-200" type="submit">Submit</button>')),
-            ]);
+            ])
+            ;
     }
 
     protected function autofillCustomerData(string $email): void
@@ -406,6 +409,7 @@ class PublicTransaction extends Page implements HasForms
 
             try {
                 $this->emit('showTransactionModal', $this->transaction, $this->customer, $this->queue);
+                dd($this->transaction);
             } catch (\Exception $e) {
                 Log::error('Error show Modal: ' . $e->getMessage());
 
@@ -435,6 +439,24 @@ class PublicTransaction extends Page implements HasForms
 
             return;
         }
+    }
+
+    public function getListeners(): array
+    {
+        return [
+            'showTransactionModal' => 'openModal',
+        ];
+    }
+
+    public function openModal($transaction, $customer, $queue)
+    {
+        // Set the data you want to pass to the modal
+        $this->transaction = $transaction;
+        $this->customer = $customer;
+        $this->queue = $queue;
+
+        // Open the modal
+        $this->openModal = true;
     }
 
 }

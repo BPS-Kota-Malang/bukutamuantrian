@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\QueueResource\Pages;
 use App\Livewire\PlayAudioModal;
+use App\Models\Operator;
 use App\Models\Queue;
 use App\Models\SpeechAudio;
 use App\Services\QueueAnnouncementService;
@@ -53,6 +54,10 @@ class QueueResource extends Resource
                     ->label('Tanggal Pelayanan')
                     ->sortable('date')
                     ->alignCenter(),
+                SelectColumn::make('operator_id')
+                    ->options(
+                        Operator::all()->pluck('name', 'id')
+                    ),
                 TextColumn::make('number')
                     ->label('Nomor Antrian')
                     ->alignCenter(),

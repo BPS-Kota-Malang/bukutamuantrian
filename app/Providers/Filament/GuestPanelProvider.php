@@ -55,6 +55,8 @@ class GuestPanelProvider extends PanelProvider
             ])
             ->authMiddleware([])
             ->navigation(false)
-            ->topbar(false);
+            ->topbar(false)
+            ;
+
     }
 }

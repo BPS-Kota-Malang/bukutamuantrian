@@ -5,8 +5,8 @@
                 <!-- Counter and Total Queue -->
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2">
-                        <span class="text-4xl font-bold text-primary-600">1</span>
-                        <span class="text-2xl font-semibold text-gray-600">Counter</span>
+                        <span class="text-2xl font-semibold text-gray-600">Counter 1 </span>
+                        {{-- <span class="text-4xl font-bold text-primary-600">1</span> --}}
                     </div>
 
                     <div>
@@ -17,7 +17,7 @@
                 <!-- Now Serving Section -->
                 <div class="space-y-6">
                     <div class="space-y-4">
-                        <span class="text-2xl font-semibold text-gray-600">Now Serving</span>
+                        <span class="text-xl font-semibold text-gray-600">Now Serving</span>
                         @php
                             $currentServing = $queues->where('status', 'onprocess')->first();
                             if ($currentServing) {
@@ -30,7 +30,7 @@
                             }
                         @endphp
                         <div class="flex flex-col items-center justify-center py-8">
-                            <div class="font-extrabold tracking-tight !text-[150px] text-primary-600">
+                            <div class="text-2xl font-extrabold tracking-tight text-primary-600">
                                 {{ $service . $currentServingNumber }}
                             </div>
                         </div>
@@ -40,11 +40,14 @@
                     <div class="space-y-2">
                         <span class="text-2xl font-semibold text-gray-600">Operator</span>
                         @php
-                            $currentOperator = $queues->where('status', 'onprocess')->first()?->operator;
+                            // $currentOperator = $queues->where('status', 'onprocess')->first()?->operator;
+                            $currentOperator = $queues->where('status', 'onprocess')->first();
+                            $currentOperator = $currentOperator->operator;
                         @endphp
                         <div class="flex items-center space-x-2">
                             <span class="text-4xl font-bold text-primary-600">
-                                {{ $currentOperator?->name ?? 'UnAssign' }}
+                                {{-- {{ $currentOperator?->name ?? 'UnAssign' }} --}}
+                                {{ $currentOperator -> name ?? 'UnAssign' }}
                             </span>
                         </div>
                     </div>

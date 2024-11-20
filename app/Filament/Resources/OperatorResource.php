@@ -6,6 +6,7 @@ use App\Filament\Resources\OperatorResource\Pages;
 use App\Filament\Resources\OperatorResource\RelationManagers;
 use App\Models\Operator;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -26,7 +27,8 @@ class OperatorResource extends Resource
     {
         return $form
             ->schema([
-                //
+                TextInput::make('name')
+                    ->label('Masukkan Nama'),
             ]);
     }
 
