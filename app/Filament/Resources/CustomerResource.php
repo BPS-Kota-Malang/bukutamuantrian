@@ -47,6 +47,7 @@ class CustomerResource extends Resource
                 ->sortable(),
                 TextColumn::make('institution.name')
                 ->sortable(),
+
             ])
             ->filters([
                 //

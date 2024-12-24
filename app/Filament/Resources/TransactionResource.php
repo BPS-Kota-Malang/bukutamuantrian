@@ -42,6 +42,13 @@ class TransactionResource extends Resource
                     ->label('Queue ID')
                     ->getStateUsing(fn ($record) => $record->queue ? $record->queue->id : 'No Queue') // Checks for queue before accessing ID
                     ->sortable(),
+                TextColumn::make('service.name')
+                    ->label('Layanan'),
+                TextColumn::make('purpose.name')
+                    ->label('Tujuan'),
+                TextColumn::make('created_at')
+                    ->label('Tanggal')
+                    ->date('d-m-Y'),
 
 
             ])
