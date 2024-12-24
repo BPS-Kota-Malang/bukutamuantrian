@@ -40,9 +40,13 @@
                     <div class="space-y-2">
                         <span class="text-2xl font-semibold text-gray-600">Operator</span>
                         @php
-                            // $currentOperator = $queues->where('status', 'onprocess')->first()?->operator;
-                            $currentOperator = $queues->where('status', 'onprocess')->first();
-                            $currentOperator = $currentOperator->operator;
+                            $currentOperator = $currentServing;
+                            if ($currentServing) {
+                                $currentOperator = $currentServing->operator;
+                            } else {
+                                $currentOperator = null;
+                            }
+
                         @endphp
                         <div class="flex items-center space-x-2">
                             <span class="text-4xl font-bold text-primary-600">
