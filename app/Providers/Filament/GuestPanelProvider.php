@@ -35,7 +35,7 @@ class GuestPanelProvider extends PanelProvider
             ->pages([
                 // Pages\Dashboard::class,
                 PublicTransaction::class,
-                DashboardAntrian::class,
+                // DashboardAntrian::class,
                 // \App\Filament\Guest\Pages\QueueDisplay::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Guest/Widgets'), for: 'App\\Filament\\Guest\\Widgets')
