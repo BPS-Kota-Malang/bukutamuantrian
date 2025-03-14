@@ -26,7 +26,7 @@ class GuestPanelProvider extends PanelProvider
     {
         return $panel
             ->id('guest')
-            ->path('guest')
+            ->path('')
             ->colors([
                 'primary' => Color::Amber,
             ])

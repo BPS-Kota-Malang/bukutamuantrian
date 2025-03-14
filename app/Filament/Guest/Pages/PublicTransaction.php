@@ -134,8 +134,33 @@ class PublicTransaction extends Page implements HasForms
                                 ])
                                 ->required(),
                         ]),
-                    Wizard\Step::make('Pendidikan')
+                    Wizard\Step::make('Pendidikan & Pekerjaan')
                         ->schema([
+                            Select::make('education_id')
+                                ->label('Pendidikan terakhir')
+                                ->options(Education::all()->pluck('name', 'id'))
+                                ->required(),
+                            Select::make('work_id')
+                                ->label('Pilih Pekerjaan Anda')
+                                ->options(Work::all()->pluck('name', 'id'))
+                                ->required()
+                                ->searchable()
+                                ->reactive() // Make this field reactive to allow dynamic form updates
+                                ->afterStateUpdated(function (callable $set, $state) {
+                                    $set('university_id', null); // Reset 'university_id' when 'work_id' is updated
+                                    $set('institution_id', null); // Reset 'institution_id' when 'work_id' is updated
+                                })
+                                ->live()
+                                ->createOptionForm([ // Allow adding a new institution if not found
+                                    TextInput::make('name')
+                                        ->label('Masukkan Pekerjaan Anda')
+                                        ->required(),
+                                ])
+                                ->createOptionUsing(function ($data) {
+                                    return Work::create([
+                                        'name' => $data['name'],
+                                    ])->id;
+                                }),
                             Select::make('university_id')
                                 ->label('Pilih Universitas')
                                 ->options(University::all()->pluck('name', 'id')) // Make sure to populate this with your actual university data
@@ -154,15 +179,24 @@ class PublicTransaction extends Page implements HasForms
                                         'name' => $data['name'],
                                     ])->id;
                                 }),
-                            Select::make('faculty_id')
-                                ->label('Fakultas')
-                                ->options(Faculty::all()->pluck('name', 'id'))
-                                ->required(),
-                            Select::make('department_id')
-                                ->label('Jurusan')
-                                ->options(Education::all()->pluck('name', 'id'))
-                                ->required(),
-
+                            Select::make('institution_id')
+                                ->label('Pilih Institusi')
+                                ->options(Institution::all()->pluck('name', 'id')) // Populated with current institutions
+                                // ->relationship('institution', 'name')
+                                ->required(fn(Get $get) => $get('work_id') && $get('work_id') !== '1') // Required only if work_id is NOT '1'
+                                ->hidden(fn(Get $get) => !$get('work_id') || $get('work_id') == '1') // Show only when work_id is not '1'
+                                ->reactive()
+                                ->createOptionForm([ // Allow adding a new institution if not found
+                                    TextInput::make('name')
+                                        ->label('Masukkan Nama Institusi')
+                                        ->required(),
+                                ])
+                                ->createOptionUsing(function ($data) {
+                                    return Institution::create([
+                                        'name' => $data['name'],
+                                    ])->id;
+                                })
+                                ->searchable(), // Allows searching through the institution list
                         ]),
                     Wizard\Step::make('Layanan')
                         ->schema([

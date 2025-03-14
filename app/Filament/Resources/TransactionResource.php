@@ -6,10 +6,14 @@ use App\Filament\Resources\TransactionResource\Pages;
 use App\Filament\Resources\TransactionResource\RelationManagers;
 use App\Models\Transaction;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -42,7 +46,7 @@ class TransactionResource extends Resource
                     ->label('Media Pelayanan'),
                 TextColumn::make('queue_id')
                     ->label('Queue ID')
-                    ->getStateUsing(fn ($record) => $record->queue ? $record->queue->id : 'No Queue') // Checks for queue before accessing ID
+                    ->getStateUsing(fn ($record) => $record->queue ? $record->queue->id : '-') // Checks for queue before accessing ID
                     ->sortable(),
                 TextColumn::make('service.name')
                     ->label('Layanan'),
@@ -50,12 +54,48 @@ class TransactionResource extends Resource
                     ->label('Tujuan'),
                 TextColumn::make('created_at')
                     ->label('Tanggal')
-                    ->date('d-m-Y'),
-
-
+                    ->date('d-m-Y')
+                    ->sortable(),
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->color(fn (string $state): string => match ($state) {
+                        'Queue' => 'warning',
+                        'Completed' => 'success',
+                    }),
+                SelectColumn::make('status')
+                    ->options([
+                        'Queue' => 'Queue',
+                        'Completed' => 'Completed',
+                    ])
+                    // ->order(0),
             ])
+            // ->orderBy('created_at')
             ->filters([
-                //
+                Filter::make('status')
+                        ->label('Filter by Status')
+                        ->form([
+                            Select::make('status')
+                                ->options([
+                                    'Queue' => 'Queue',
+                                    'Completed' => 'Completed',
+                                ])
+                                ->placeholder('All Statuses'),
+                        ])
+                        ->query(function (Builder $query, array $data): Builder {
+                            return $data['status']
+                                ? $query->where('status', $data['status'])
+                                : $query;
+                        }),
+                    Filter::make('created_at')
+                        ->label('Filter by Date')
+                        ->form([
+                                DatePicker::make('date')->label('Tanggal'),
+                            ])
+                        ->query(function (Builder $query, array $data): Builder {
+                            return $data['date']
+                                ? $query->whereDate('date', $data['date'])
+                                : $query;
+                        }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

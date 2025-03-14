@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use TransactionStatusHistory;
 
 class Transaction extends Model
 {
@@ -17,6 +19,30 @@ class Transaction extends Model
         'purpose_id',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::updating(function ($transaction) {
+            if ($transaction->isDirty('status')) { // Only track status changes
+                // Log the old status and new status in history
+                TransactionStatusHistory::create([
+                    'transaction_id' => $transaction->id,
+                    'old_status' => $transaction->getOriginal('status'),
+                    'new_status' => $transaction->status,
+                    'changed_at' => now(),
+                ]);
+
+                // Update the latest status_changed_at timestamp
+                $transaction->status_changed_at = now();
+            }
+        });
+    }
+
+    public function statusHistories(): HasMany
+    {
+        return $this->hasMany(TransactionStatusHistory::class);
+    }
 
     public function customer(): BelongsTo
     {
