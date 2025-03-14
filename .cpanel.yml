@@ -2,7 +2,7 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/bpskotam/bukutamu.bpskotamalang.id  # Update this path
-    - /bin/cp -R * $DEPLOYPATH  # Copies all project files
+    - /bin/cp -R . $DEPLOYPATH  # Copies all project files
     - cd $DEPLOYPATH
     - composer install --no-dev --optimize-autoloader  # Installs PHP dependencies
     - php artisan migrate --force  # Runs database migrations
