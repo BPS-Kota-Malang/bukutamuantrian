@@ -1,0 +1,44 @@
+<?php
+
+namespace App\Livewire;
+
+use Livewire\Component;
+
+class QueueAnnouncement extends Component
+{
+    public array $audioFiles = [];
+
+    protected $listeners = ['play-queue-announcement' => 'playAnnouncement'];
+
+    public function playAnnouncement($audioFiles)
+    {
+        $this->audioFiles = $audioFiles;
+        // dd($this->audioFiles);
+        // $this->dispatchBrowserEvent('play-audio', ['audioFiles' => $this->audioFiles]);
+        // Optionally, you can also pass the audio files for use in the modal if needed
+        // $this->dispatchBrowserEvent('play-audio', ['audioFiles' => $this->audioFiles]);
+        // $this->emit('openModal', 'queue-announcement-modal');
+        // $this->emit('openModal', 'queue-announcement-modal');
+        // $this->dispatch('playAudio', $this->audioFiles);
+
+    }
+
+    public static function canView(): bool
+    {
+        return true;
+    }
+
+    public static function getDefaultProperties(): array
+    {
+        return [
+            'audioFiles' => [],
+        ];
+    }
+
+    public function render()
+    {
+        return view('livewire.queue-announcement',   $this->audioFiles);
+        // return $this->audioFiles;
+        // }
+    }
+}

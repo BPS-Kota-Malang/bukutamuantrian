@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Guest\Pages\PublicTransaction;
+use App\Filament\Pages\DashboardAntrian;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -32,7 +34,9 @@ class GuestPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Guest/Pages'), for: 'App\\Filament\\Guest\\Pages')
             ->pages([
                 // Pages\Dashboard::class,
-                \App\Filament\Guest\Pages\PublicTransaction::class
+                PublicTransaction::class,
+                DashboardAntrian::class,
+                // \App\Filament\Guest\Pages\QueueDisplay::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Guest/Widgets'), for: 'App\\Filament\\Guest\\Widgets')
             ->widgets([
@@ -51,6 +55,8 @@ class GuestPanelProvider extends PanelProvider
             ])
             ->authMiddleware([])
             ->navigation(false)
-            ->topbar(false);
+            ->topbar(false)
+            ;
+
     }
 }

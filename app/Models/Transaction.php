@@ -28,6 +28,11 @@ class Transaction extends Model
         return $this->belongsTo(Service::class);
     }
 
+    public function purpose(): BelongsTo
+    {
+        return $this->belongsTo(Purpose::class);
+    }
+
     public function sub_method(): BelongsTo
     {
         return $this->belongsTo(SubMethod::class);

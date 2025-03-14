@@ -23,5 +23,10 @@ class Queue extends Model
         return $this->belongsTo(Transaction::class);
     }
 
+    public function  operator() : BelongsTo
+    {
+        return $this->belongsTo(Operator::class);
+    }
+
 
 }

@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\QueueResource\Pages;
 use App\Livewire\PlayAudioModal;
-use App\Models\Operator;
 use App\Models\Queue;
 use App\Models\SpeechAudio;
 use App\Services\QueueAnnouncementService;
@@ -12,7 +11,6 @@ use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
-// use Filament\Forms\Components\View;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -22,8 +20,6 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
-// use Illuminate\View;
 use Livewire\Livewire;
 
 class QueueResource extends Resource
@@ -54,10 +50,6 @@ class QueueResource extends Resource
                     ->label('Tanggal Pelayanan')
                     ->sortable('date')
                     ->alignCenter(),
-                SelectColumn::make('operator_id')
-                    ->options(
-                        Operator::all()->pluck('name', 'id')
-                    ),
                 TextColumn::make('number')
                     ->label('Nomor Antrian')
                     ->alignCenter(),
@@ -100,28 +92,18 @@ class QueueResource extends Resource
                 Tables\Actions\Action::make('play-sound')
                     ->label('Play Sound')
                     ->icon('heroicon-o-play')
-                    ->modalContent(
-                        (function (Queue $record) {
-                            // You can handle any logic needed before showing the modal here
-                            // For example, fetching audio files for the announcement
-                            $announcementService = app(QueueAnnouncementService::class);
-                            $audioFiles = $announcementService->getAnnouncementAudioFiles($record);
+                    // ->livewireClickHandlerEnabled()
+                    // ->action(function (Queue $record, Tables\Actions\Action $action) {
+                    //     $announcementService = app(QueueAnnouncementService::class);
+                    //     $audioFiles = $announcementService->getAnnouncementAudioFiles($record);
 
-                            // Dispatch the event or update the Livewire component with the audio files
-                            // You may dispatch an event to play the audio and show the modal
-                            // $this->emit('play-queue-announcement', $audioFiles);
+                    //     $action->getLivewire()->dispatch('play-queue-announcement', audioFiles: $audioFiles);
+                    ->action(function (Queue $record) {
+                       Tables\Actions\Action::make('view_sales')
+                        ->modal()
+                        ->modalContent(fn($record) => view('livewire.queue-announcement', ['record' => $record]));
 
-                            // Show the modal with the content
-                            return view('livewire.queue-announcement', [
-                                'record' => $record,
-                                'audioFiles' => $audioFiles
-                            ]);
-                        })
-                        // fn(Queue $record) : View => view('livewire.queue-announcement', [ 'record' => $record ])
-                    )
-
-                    // ->modalSize('lg')
-                    ->modalSubmitAction(false)
+                    })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -38,6 +38,8 @@ class PublicTransaction extends Page implements HasForms
 
     protected static string $view = 'filament.guest.pages.public-transaction';
 
+    // protected static string $heading = 'filament.guest.pages.public-transaction';
+
     public $name;
     public $phone;
     public $email;
@@ -132,21 +134,8 @@ class PublicTransaction extends Page implements HasForms
                                 ])
                                 ->required(),
                         ]),
-                    Wizard\Step::make('Pendidikan & Pekerjaan')
+                    Wizard\Step::make('Pendidikan')
                         ->schema([
-                            Select::make('education_id')
-                                ->label('Pendidikan terakhir')
-                                ->options(Education::all()->pluck('name', 'id'))
-                                ->required(),
-                            Select::make('work_id')
-                                ->label('Pilih Pekerjaan Anda')
-                                ->options(Work::all()->pluck('name', 'id'))
-                                ->required()
-                                ->reactive() // Make this field reactive to allow dynamic form updates
-                                ->afterStateUpdated(function (callable $set, $state) {
-                                    $set('university_id', null); // Reset 'university_id' when 'work_id' is updated
-                                    $set('institution_id', null); // Reset 'institution_id' when 'work_id' is updated
-                                }),
                             Select::make('university_id')
                                 ->label('Pilih Universitas')
                                 ->options(University::all()->pluck('name', 'id')) // Make sure to populate this with your actual university data
@@ -165,24 +154,15 @@ class PublicTransaction extends Page implements HasForms
                                         'name' => $data['name'],
                                     ])->id;
                                 }),
-                            Select::make('institution_id')
-                                ->label('Pilih Institusi')
-                                ->options(Institution::all()->pluck('name', 'id')) // Populated with current institutions
-                                // ->relationship('institution', 'name')
-                                ->required(fn(Get $get) => $get('work_id') && $get('work_id') !== '1') // Required only if work_id is NOT '1'
-                                ->hidden(fn(Get $get) => !$get('work_id') || $get('work_id') == '1') // Show only when work_id is not '1'
-                                ->reactive()
-                                ->createOptionForm([ // Allow adding a new institution if not found
-                                    TextInput::make('name')
-                                        ->label('Masukkan Nama Institusi')
-                                        ->required(),
-                                ])
-                                ->createOptionUsing(function ($data) {
-                                    return Institution::create([
-                                        'name' => $data['name'],
-                                    ])->id;
-                                })
-                                ->searchable(), // Allows searching through the institution list
+                            Select::make('faculty_id')
+                                ->label('Fakultas')
+                                ->options(Faculty::all()->pluck('name', 'id'))
+                                ->required(),
+                            Select::make('department_id')
+                                ->label('Jurusan')
+                                ->options(Education::all()->pluck('name', 'id'))
+                                ->required(),
+
                         ]),
                     Wizard\Step::make('Layanan')
                         ->schema([
@@ -201,7 +181,8 @@ class PublicTransaction extends Page implements HasForms
                                 ->required(),
                         ]),
                 ])->submitAction(new HtmlString('<button class="bg-yellow-200" type="submit">Submit</button>')),
-            ]);
+            ])
+            ;
     }
 
     protected function autofillCustomerData(string $email): void
@@ -326,10 +307,7 @@ class PublicTransaction extends Page implements HasForms
             // Commit the transaction since everything is successful
             DB::commit();
 
-
-
             // Assuming this is the completion part of the transaction process in your Filament resource
-            // $this->emit('showTransactionModal', $this->transaction, $this->customer, $this->queue);
             $layanan_choosed = SubMethod::find($layanan)->value('name');
 
             if ($layanan == 4) {
@@ -408,20 +386,9 @@ class PublicTransaction extends Page implements HasForms
                 ->send();
 
             try {
-                // Assuming this is inside your submit method
-                $this->dispatchBrowserEvent('showTransactionModal', [
-                    'transaction' => $this->transaction,
-                    'customer' => $this->customer,
-                    'queue' => $this->queue,
-                ]);
-                $this->showTransactionModal();
-                // $this->openModal = true;
-                // $this->emit('showTransactionModal', [
-                //     'transaction' => $this->transaction,
-                //     'customer' => $this->customer,
-                //     'queue' => $this->queue,
-                // ]);
 
+                $this->emit('showTransactionModal', $this->transaction, $this->customer, $this->queue);
+                // dd($this->transaction);
             } catch (\Exception $e) {
                 Log::error('Error show Modal: ' . $e->getMessage());
 
@@ -453,57 +420,22 @@ class PublicTransaction extends Page implements HasForms
         }
     }
 
-    // protected function showTransactionModal()
-    // {
-    //     $this->openModal = true;// Open the modal with transaction details
-    // }
-
-    protected function transactionAction(): Action
-    {
-        return Action::make('transactionModal')
-            ->label('Transaction Details')
-            ->modalButton('Close')
-            ->modalHeading('Transaction Completed')
-            ->modalContent(view('filament.guest.pages.transaction-modal', [
-                'transaction' => $this->transaction,
-                'customer' => $this->customer,
-                'queue' => $this->queue,
-            ]));
-    }
-
-    public function actions(): array
+    public function getListeners(): array
     {
         return [
-            Action::make('showTransactionDetails') // Name of the action
-                ->label('View Transaction Details')  // The button text that will be shown
-                ->modalHeading('Transaction Details') // The modal's heading
-                ->modalButton('Close') // The button text to close the modal
-                ->modalWidth('lg') // Optional: you can define the size of the modal (lg, sm, etc.)
-                ->action(function () {
-                    // When clicked, it will trigger showing the modal
-                    $this->showTransactionModal();
-                })
-                ->modalContent(view('filament.guest.pages.transaction-modal', [
-                    'transaction' => $this->transaction,  // Pass the transaction data to the modal view
-                    'customer' => $this->customer,
-                    'queue' => $this->queue,
-                ])),
+            'showTransactionModal' => 'openModal',
         ];
     }
 
-    // Modal that will be conditionally displayed
-    public function getModal(): array
+    public function openModal($transaction, $customer, $queue)
     {
-        return [
-            'modal' => [
-                'title' => 'Transaction Completed',
-                'content' => view('filament.guest.pages.transaction-modal', [
-                    'transaction' => $this->transaction,
-                    'customer' => $this->customer,
-                    'queue' => $this->queue,
-                ]),
-                'open' => $this->openModal, // This is a boolean flag that controls the modal visibility
-            ],
-        ];
+        // Set the data you want to pass to the modal
+        $this->transaction = $transaction;
+        $this->customer = $customer;
+        $this->queue = $queue;
+
+        // Open the modal
+        $this->openModal = true;
     }
+
 }

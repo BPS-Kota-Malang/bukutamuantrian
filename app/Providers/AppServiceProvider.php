@@ -5,6 +5,8 @@ use Filament\Facades\Filament;
 use Filament\Navigation\NavigationGroup;
 use Filament\Resources\Pages\Page;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-
+        Livewire::component('play-audio-modal', \App\Livewire\PlayAudioModal::class);
     }
 }

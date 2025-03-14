@@ -12,6 +12,10 @@
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.5",
+        "psr/simple-cache": "2.0",
+        "pxlrbt/filament-excel": "^2.3",
+        "spatie/laravel-query-builder": "^6.3",
+        "spatie/simple-excel": "^3.7",
         "wppconnect-team/wppconnect-laravel-client": "^1.0"
     },
     "require-dev": {
