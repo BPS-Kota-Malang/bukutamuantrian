@@ -39,6 +39,7 @@ class TransactionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->query(Transaction::query()->orderBy('created_at', 'desc'))
             ->columns([
                 TextColumn::make('customer.name')
                     ->label('Nama Pengguna'),
@@ -67,6 +68,12 @@ class TransactionResource extends Resource
                         'Queue' => 'Queue',
                         'Completed' => 'Completed',
                     ])
+                    ->afterStateUpdated(function ($state, $record) {
+                        // This ensures status updates trigger the event
+                        $record->update(['status' => $state]);
+                    })
+                    ->sortable()
+                    ->searchable(),
                     // ->order(0),
             ])
             // ->orderBy('created_at')

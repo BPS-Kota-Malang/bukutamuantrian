@@ -1,17 +1,19 @@
 <?php
 
-use App\Models\Transaction;
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TransactionStatusHistory extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['transaction_id', 'old_status', 'new_status', 'changed_at'];
 
-    public $timestamps = false;
-
-    public function transaction(): BelongsTo
+    public function transaction()
     {
         return $this->belongsTo(Transaction::class);
     }
 }
+
